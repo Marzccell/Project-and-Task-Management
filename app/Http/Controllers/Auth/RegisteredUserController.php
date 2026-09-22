@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\Project;
+use App\Models\User;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\View\View;
+
+class RegisteredUserController extends Controller
+{
+    public function create(): View { return view('auth.register'); }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $request->merge(['email' => Str::lower(trim((string) $request->email))]);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:80'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()->mixedCase()],
+        ]);
+
+        $user = DB::transaction(function () use ($data): User {
+            $user = User::create($data);
+            $user->projects()->create([
+                'name' => 'My First Project',
+                'description' => 'Start organizing your work here.',
+                'status' => 'active',
+            ]);
+            return $user;
+        });
+
+        event(new Registered($user));
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('dashboard')->with('success', 'Akun berhasil dibuat. Selamat datang di CampusFlow!');
+    }
+}

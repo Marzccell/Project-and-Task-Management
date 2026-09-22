@@ -1,0 +1,17 @@
+<dialog id="task-dialog" aria-labelledby="task-dialog-title"><form method="POST" enctype="multipart/form-data" action="{{ route('tasks.store') }}" id="task-form" data-store-url="{{ route('tasks.store') }}">@csrf<input type="hidden" name="_method" id="task-method" value="POST"><input type="hidden" name="_task_id" id="task-id">
+    <header class="dialog-header"><div><span class="eyebrow">DETAIL TUGAS</span><h2 id="task-dialog-title">Buat tugas</h2></div><button type="button" class="icon-btn" data-close-dialog aria-label="Tutup"><x-icon name="x"/></button></header>
+    <div class="dialog-fields"><label>Judul tugas <span class="required">*</span><input name="title" id="task-title" maxlength="160" required placeholder="Apa yang perlu diselesaikan?"></label><label>Deskripsi <span class="optional">opsional</span><textarea name="description" id="task-description" rows="3" maxlength="2000" placeholder="Tambahkan konteks atau catatan penting…"></textarea></label><div class="field-row"><label>Proyek <span class="required">*</span><select name="project_id" id="task-project_id" required>@foreach($projects as $project)<option value="{{ $project->id }}">{{ $project->name }}</option>@endforeach</select></label><label>Status <select name="status" id="task-status" required>@foreach(\App\Models\Task::STATUSES as $key => $label)<option value="{{ $key }}">{{ $label }}</option>@endforeach</select></label></div><div class="field-row"><label>Deadline <span class="optional">opsional</span><input name="due_date" id="task-due_date" type="date"></label><label>Lampiran <span class="optional">maks. 10 MB/file</span><input name="attachments[]" id="task-attachments" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.webp,.zip"><small class="field-help">Maksimal 5 file per tugas. Dokumen, gambar, atau ZIP.</small></label></div><input type="hidden" name="priority" id="task-priority" value="medium"><input type="hidden" name="category" id="task-category" value="personal"></div>
+    <footer class="dialog-footer"><span>Kolom bertanda * wajib diisi.</span><button type="button" class="btn" data-close-dialog>Batal</button><button type="submit" class="btn primary" id="save-task">Buat tugas</button></footer>
+</form></dialog>
+<dialog id="delete-dialog" class="delete-dialog"><form method="POST" id="delete-form">@csrf @method('DELETE')<div class="dialog-fields"><span class="delete-symbol"><x-icon name="delete" size="26"/></span><h2>Hapus tugas?</h2><p class="muted">“<span id="delete-task-title"></span>” dan seluruh lampirannya akan dihapus permanen.</p></div><footer class="dialog-footer"><button class="btn" type="button" data-close-dialog>Batal</button><button class="btn danger-btn" type="submit">Hapus tugas</button></footer></form></dialog>
+@php
+$taskData = $tasks->mapWithKeys(fn ($task) => [$task->id => [
+    'id' => $task->id, 'project_id' => $task->project_id, 'title' => $task->title,
+    'description' => $task->description, 'status' => $task->status,
+    'due_date' => $task->due_date?->format('Y-m-d'), 'attachment_count' => $task->attachments->count(),
+    'url' => route('tasks.update', $task),
+]]);
+$oldData = session()->hasOldInput() ? old() : null;
+@endphp
+<script id="task-data" type="application/json">{!! json_encode($taskData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+<script id="old-input" type="application/json">{!! json_encode($oldData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
