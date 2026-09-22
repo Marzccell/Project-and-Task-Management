@@ -121,7 +121,7 @@ DB_CONNECTION=pgsql
 DB_URL=postgresql://...
 ```
 
-Script Composer `vercel` menjalankan migration production saat build. Jangan gunakan SQLite untuk deployment Vercel karena perubahan data tidak akan persisten.
+Jalankan migration production setelah database persisten terhubung. Jangan gunakan SQLite untuk deployment Vercel karena perubahan data tidak akan persisten.
 
 ## Security Notes
 
