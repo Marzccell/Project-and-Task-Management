@@ -107,7 +107,21 @@ app/
 
 ## Catatan Deployment
 
-Laravel tidak dapat di-host sebagai aplikasi PHP penuh di Netlify/Vercel tanpa arsitektur serverless khusus. Railway atau platform PHP sejenis lebih sesuai. Untuk Railway, gunakan database PostgreSQL/MySQL persisten dan volume/object storage untuk lampiran; SQLite dan filesystem ephemeral tidak direkomendasikan untuk produksi.
+Repository ini menyertakan konfigurasi Vercel menggunakan PHP 8.2 community runtime. Local development tetap memakai SQLite, sedangkan deployment Vercel harus memakai PostgreSQL persisten melalui `DB_CONNECTION=pgsql` dan `DB_URL`/`POSTGRES_URL`. Vercel hanya menyediakan filesystem sementara pada `/tmp`, sehingga lampiran pada deployment demo tidak persisten sampai S3-compatible object storage dikonfigurasi.
+
+Environment variable minimum untuk Vercel:
+
+```env
+APP_NAME=CampusFlow
+APP_ENV=production
+APP_KEY=base64:...
+APP_DEBUG=false
+APP_URL=https://nama-project.vercel.app
+DB_CONNECTION=pgsql
+DB_URL=postgresql://...
+```
+
+Script Composer `vercel` menjalankan migration production saat build. Jangan gunakan SQLite untuk deployment Vercel karena perubahan data tidak akan persisten.
 
 ## Security Notes
 
